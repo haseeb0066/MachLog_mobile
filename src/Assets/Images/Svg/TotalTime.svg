@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="29" height="28" viewBox="0 0 29 28">
+  <g id="Layer_2" data-name="Layer 2" transform="translate(0 -0.424)">
+    <g id="invisible_box" data-name="invisible box">
+      <rect id="Rectangle_518" data-name="Rectangle 518" width="29" height="28" transform="translate(0 0.424)" fill="none"/>
+    </g>
+    <g id="Q3_icons" data-name="Q3 icons" transform="translate(2.995 1.202)">
+      <g id="Group_57" data-name="Group 57">
+        <path id="Path_47" data-name="Path 47" d="M25.305,9.872l1.442-1.5a1.142,1.142,0,0,0,0-1.683,1.082,1.082,0,0,0-.841-.361,1.2,1.2,0,0,0-.841.361l-1.5,1.442a11.478,11.478,0,0,0-5.949-2.464V4.4h1.2a1.2,1.2,0,1,0,0-2.4H14.008a1.2,1.2,0,1,0,0,2.4h1.2V5.666a11.418,11.418,0,1,0,10.1,4.207ZM16.411,26.037a9.014,9.014,0,1,1,9.014-9.014,9.014,9.014,0,0,1-9.014,9.014Z" transform="translate(-4.984 -2)" fill="#c98537"/>
+        <path id="Path_48" data-name="Path 48" d="M28.61,21.408H24.4V17.2a1.2,1.2,0,0,0-2.4,0v6.61h6.61a1.2,1.2,0,0,0,0-2.4Z" transform="translate(-11.774 -7.587)" fill="#c98537"/>
+      </g>
+    </g>
+  </g>
+</svg>

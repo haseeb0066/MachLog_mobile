@@ -1,0 +1,22 @@
+const colors = {
+  gray: "gray",
+  white: "white",
+  text_Color: "#FFFFFF33",
+  Minus: "#FF72A5CC",
+  Plus: "#85FF72CC",
+  ButtonColor: "#A9C6E8",
+  ButtonText: "#003480",
+  lightColor: "#809AC0",
+  popUpButton: "#001552",
+  bottomBarText: "#003480",
+  bottomBgColor: "#A9C6E8",
+  cancelButton: "#FF5D5D",
+  secButton: "#FF5D5D",
+  descripe: "#002571",
+  startButton: "#56CE33",
+  endButton: "#CE5333",
+  notSelectedMsg: "#072148",
+  placeHolderColor: "white",
+  buttonColor: "#A9C6E8",
+};
+export default colors;

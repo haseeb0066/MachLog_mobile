@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "991107185039",
+    "project_id": "machlog",
+    "storage_bucket": "machlog.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991107185039:android:8fa74d6dd40ca9cfcd73fa",
+        "android_client_info": {
+          "package_name": "com.machlog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "991107185039-vp7cse6n414462p49j6ugki179l8l74b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyLGxxy4hX92yKrilIctcmU1e4lc8ZGJ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991107185039-vp7cse6n414462p49j6ugki179l8l74b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
