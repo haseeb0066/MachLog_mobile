@@ -6,6 +6,8 @@ import {
   FIRST_TIME,
   PROFILE_PICTURE,
   LANGUAGE_TYPE,
+  ORIGIN_LAT,
+  ORIGIN_LONG,
 } from "./ActionsTypes";
 
 export function LanguageType(data) {
@@ -54,6 +56,22 @@ export function userProfilePicture(data) {
   console.log(" userProfilePicture ==> ", data);
   return {
     type: PROFILE_PICTURE,
+    payload: data,
+  };
+}
+
+export function originLat(data) {
+  // console.log(" ORIGIN_LONG ==> ", data);
+  return {
+    type: ORIGIN_LAT,
+    payload: data,
+  };
+}
+
+export function originLong(data) {
+  // console.log(" ORIGIN_LONG ==> ", data);
+  return {
+    type: ORIGIN_LONG,
     payload: data,
   };
 }

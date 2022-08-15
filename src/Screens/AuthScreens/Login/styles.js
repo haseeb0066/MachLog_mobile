@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
     // borderWidth: 1,
     // height: hp(10),
     // borderColor: "white",
+
     fontSize: 14,
     fontWeight: "bold",
     // color: colors.white,
@@ -122,7 +123,6 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     flex: 0.4,
-
     // borderWidth: 1,
     // borderColor: "white",
     alignItems: "flex-end",
@@ -150,37 +150,40 @@ const styles = StyleSheet.create({
   },
   ListText: {
     marginTop: hp(1),
-    // borderWidth: 2,
+    borderWidth: 2,
     fontSize: hp(2),
     color: colors.ButtonText,
     fontWeight: "400",
   },
   phoneStyle: {
     marginTop: hp(1),
-    height: hp(6),
+    height: hp(6.5),
     width: "100%",
     backgroundColor: "transparent",
-    borderRadius: hp(1.2),
+    borderRadius: hp(2),
     flexDirection: "row",
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: colors.white,
+    color: "white",
   },
 
   textStyle: {
-    // justifyContent: "center",
     alignContent: "center",
-    // borderWidth: 1,
-    // borderColor: "white",
-    fontSize: 18,
-    backgroundColor: "transparent",
+    // color: colors.white,
+    fontSize: hp(1.7),
+    backgroundColor: colors.ButtonText,
+    borderRadius: hp(3),
+    textAlign: "center",
+    paddingTop: hp(1.5),
   },
   textStyle1: {
-    fontSize: 14,
-    fontWeight: "bold",
-    backgroundColor: "black",
-  },
-  codeTextStyle: {
-    // color: "white",
+    top: Platform.OS === "ios" ? hp(0.2) : hp(0.25),
+    fontSize: hp(1.7),
+    // borderWidth: 1,6768768
+    // fontWeight: "bold",
+    borderColor: "white",
+    color: "white",
+    height: hp(6.2),
   },
 });
 

@@ -9,6 +9,7 @@ import {
   Modal,
   PermissionsAndroid,
   TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import styles from "./styles";
 import Header from "../../../Components/Common/Header/Header";
@@ -28,22 +29,42 @@ import { Formik } from "formik";
 import Loader from "../../../Components/Common/Loader/Loader";
 import DropDown from "../../../Assets/Images/Svg/dropdown.svg";
 import { useDispatch, useSelector } from "react-redux";
-import Toast from "react-native-simple-toast";
+import Toast from "react-native-toast-message";
 import { userProfilePicture } from "../../../Redux/Actions/Actions";
 import axios from "axios";
 import apiClient from "../../../Config/Client";
-import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import HitApi from "../../../Config/HitApis/HitApis";
 import EndPoints from "../../../Config/BaseUrl/BaseUrl";
 import PreferenceKeys from "../../../Utills/PreferenceKeys/PreferenceKeys";
 import LocalStorage from "../../../Utills/LocalStorage/LocalStorage";
 import { useTranslation } from "react-i18next";
+import GetTokenApi from "../../../Config/GetTokenApi/GetTokenApi";
+import AppFromField from "../../../Components/Common/FormComponents/AppFromField";
+import AppForm from "../../../Components/Common/FormComponents/AppFrom";
+import PopUpModal from "../../../Components/Application/PopUpModal/PopUpModal";
+import SubmitButton from "../../../Components/Application/SubmitButton/SubmitButton";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 
 function ProfileScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [userImage, setUserImage] = useState("");
   const [showImage, setShowImage] = useState("");
+  const [showImage1, setShowImage1] = useState("");
+  const [toggle, setToggle] = useState(false);
+  const [FrontImage, setFrontImage] = useState("");
+
+  // =============== mobile storage ===================
+  const [frontLocal, setFrontLocal] = useState("");
+  const [backLocal, setBackLocal] = useState("");
+  const [pickFront, setPickFront] = useState(false);
+  const [pickBack, setPickBack] = useState(false);
+  const [currentlySelect, setSurrentlySelect] = useState(false);
+  const [currentlySelect1, setSurrentlySelect1] = useState(false);
+
+  // =============== mobile storage ===================
+
+  const [backImage, setBackImage] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -55,6 +76,11 @@ function ProfileScreen({ navigation }) {
   // =========== CUSTOM PICKEER ===========
   const [chooseData, setChooseData] = useState("Subscription Packages");
   const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [popUpModalVisible, setPopUpModalVisible] = useState(false);
+
+  const [modalVisible1, setModalVisible1] = useState(false);
+  const [selected, setSelected] = useState("");
+  const [getValue, setGetValue] = useState("");
   const OPTIONS = ["Per day", "Per month", "Per year"];
 
   // ================  Redux  ==================
@@ -62,8 +88,16 @@ function ProfileScreen({ navigation }) {
   const emailAddress = useSelector((state) => state.authReducer.email);
   const mobileNumber = useSelector((state) => state.authReducer.mobile);
   const token = useSelector((state) => state.authReducer.token);
+  console.log("Token  ==>  ", token);
+
   const profilePIcture = useSelector(
     (state) => state.authReducer.profilePIcture
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      ViewProfile();
+    }, [])
   );
 
   const changeModalVisiblility = (bool) => {
@@ -124,7 +158,11 @@ function ProfileScreen({ navigation }) {
   };
 
   useEffect(() => {
-    // requestCameraPermission();
+    if (Platform.OS === "ios") {
+      null;
+    } else {
+      requestCameraPermission();
+    }
   }, []);
 
   const LunchCamera = async () => {
@@ -191,6 +229,22 @@ function ProfileScreen({ navigation }) {
     });
   };
 
+  // ===== Fromik Validation =======
+  const userInfo = {
+    vehicleName: "Honda",
+    vehicleManufacturer: getValue.vehicle_manufacturer,
+    vehicleRegistration: getValue.vehicle_registration_no,
+  };
+  const validationSchema = yup.object({
+    vehicleName: yup.string().required("Vehicle Name is required to edit"),
+    vehicleManufacturer: yup
+      .string()
+      .required("Vehicle Manufacturer is required to edit"),
+    vehicleRegistration: yup
+      .string()
+      .required("Vehicle Registration Number is required to edit"),
+  });
+
   const CheckLogout = () => {
     dispatch(logout());
   };
@@ -211,61 +265,204 @@ function ProfileScreen({ navigation }) {
       console.log("res OK =====>", result.data);
     } else {
       setIsLoading(false);
-      alert(result?.data);
+      alert(result);
     }
   };
 
-  // =============  API check ===================
   const ViewProfile = async () => {
-    // /user/view-mobile-profile
     setIsLoading(true);
-    const result = await apiClient.get(
-      `https://machlog.viltco.com/api/user/view-mobile-profile`,
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (result.ok) {
+    const res = await GetTokenApi(EndPoints.GetProfileData, "GET", token);
+    if (res.status === 200) {
       setIsLoading(false);
-      // console.log("res View Profile =====>   ", result?.data.profile_picture);
-      setUserImage(result?.data?.profile_picture);
+      setUserImage(res.data?.profile_picture);
+      setFrontImage(res.data?.licnense_front_image);
+      setBackImage(res.data?.licnense_back_image);
+      setGetValue(res.data);
+      console.log("res.data ===>   ", res.data);
+      // Toast.show(res.data.message, Toast.LONG);
+      // alert(res.data.message);
     } else {
       setIsLoading(false);
-      // console.log("else View Profile =====>   ", result?.data?.message);
+      console.log("res else ==>  ", res.data);
+      // Toast.show(res.data.message, Toast.LONG);
+      // alert("running bad");
+      // alert(res.data.message);
+    }
+    CountDown();
+  };
+
+  //========== API ==========
+  const UpdateProfileApi = async (values) => {
+    // console.log("values ==>  ", values);
+    if (frontLocal.length < 0 || FrontImage.length < 0) {
+      console.log("frontLocal ==>   ", frontLocal.length);
+      console.log("FrontImage ==>   ", FrontImage.length);
+
+      Toast.show({
+        type: "error",
+        text1: "Required",
+        text2: "Kindly upload driving license front image",
+        // topOffset: 100,
+      });
+    } else if (backLocal.length < 0 || backImage.length < 0) {
+      console.log("backLocal ==>   ", backLocal.length);
+      console.log("backImage ==>   ", backImage.length);
+
+      Toast.show({
+        type: "error",
+        text1: "Required",
+        text2: "Kindly upload driving license back image",
+        // topOffset: 100,
+      });
+    } else {
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Accept", "application/json");
+      console.log("current selected ==> ", currentlySelect);
+      var formdata = new FormData();
+      console.log("profile image ==> ", showImage);
+      formdata.append("profile_picture", showImage);
+      formdata.append("vehicle_name", values.vehicleName);
+      formdata.append("vehicle_manufacturer", values.vehicleManufacturer);
+      formdata.append("vehicle_registration_no", values.vehicleRegistration);
+      // if (FrontImage) {
+      //   formdata.append("licnense_front_image", FrontImage);
+      // } else {
+      //   formdata.append("licnense_front_image", frontLocal);
+      // }
+      // if (backImage) {
+      //   formdata.append("licnense_front_image", backImage);
+      // } else {
+      //   formdata.append("licnense_back_image", backLocal);
+      // }
+      {
+        currentlySelect
+          ? formdata.append("licnense_front_image", frontLocal)
+          : formdata.append("licnense_front_image", FrontImage);
+      }
+      // formdata.append("licnense_front_image", frontLocal);
+      {
+        currentlySelect1
+          ? formdata.append("licnense_back_image", backLocal)
+          : formdata.append("licnense_back_image", backImage);
+      }
+
+      // formdata.append("licnense_back_image", backLocal);
+
+      console.log("Sending data ==>   ", formdata);
+
+      setIsLoading(true);
+      const result = await apiClient.post(
+        EndPoints.UpdateProfileData,
+        formdata,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (result.ok) {
+        setIsLoading(false);
+        // setPickFront(false);
+        // setPickBack(false);
+        // console.log("res=====>   ", result.data.data);
+        // Toast.show(result.data.data, Toast.LONG);
+        setToggle(false);
+        alert(result.data.data);
+      } else {
+        setIsLoading(false);
+        // console.log("else =====>   ", result?.data);
+        alert(result?.data.message);
+        // Toast.show(result?.data.message, Toast.LONG);
+      }
     }
   };
 
-  useEffect(() => {
-    ViewProfile();
-  }, [isFocused]);
-
-  const saveImageAPI = async () => {
-    var formdata = new FormData();
-    formdata.append("profile_picture", showImage);
-    console.log("formdata ==>  ", formdata);
-
-    setIsLoading(true);
-    const result = await apiClient.post(
-      `https://machlog.viltco.com/api/user/submit-mobile-profile`,
-      formdata,
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
+  //  ===== Camers frontback open function=======
+  const LunchCamera1 = async () => {
+    const Options = {
+      title: "Choose an Image",
+    };
+    await launchCamera(Options, (response) => {
+      const Options = {
+        title: "Choose anndd Image",
+      };
+      console.log("launch camera function");
+      setModalVisible1(false);
+      setIsLoading(true);
+      try {
+        if (response.didCancel) {
+          alert("User cancelled image picker");
+          setIsLoading(false);
+        } else {
+          setPopUpModalVisible(false);
+          let obj = {
+            name: response.assets[0].fileName,
+            type: response.assets[0].type,
+            uri: response.assets[0].uri,
+          };
+          console.log("photo response ==> ", response.assets[0].uri);
+          {
+            selected
+              ? (setSurrentlySelect(true),
+                setPickFront(true),
+                setFrontLocal(obj))
+              : (setSurrentlySelect1(true),
+                setPickBack(true),
+                setBackLocal(obj));
+          }
+          // console.log("selct front from local ==>  ", pickFront);
+          alert("selected front from local");
+          setShowImage1(response.assets[0].uri);
+          setIsLoading(false);
+        }
+      } catch (e) {
+        setIsLoading(false);
+        console.log("error==> ", e);
       }
-    );
-    if (result.ok) {
-      setIsLoading(false);
-      console.log("response POST Pic ===>  ", result?.data);
-      alert("Profile updated successfully");
-    } else {
-      setIsLoading(false);
-      console.log("res else POST Pic =====>", result);
-    }
+    });
+  };
+
+  //===== Gallery signup Open images =======
+  const LunchGallery1 = async () => {
+    const Options = {
+      title: "Choose an Image",
+      maxWidth: 1170,
+      maxHeight: 2430,
+    };
+    setModalVisible1(false);
+    // setIsLoading(true);
+    await launchImageLibrary(Options, async (response) => {
+      try {
+        if (response.didCancel) {
+          alert("User cancelled image picker");
+          setIsLoading(false);
+        } else {
+          setPopUpModalVisible(false);
+          let obj = {
+            name: response.assets[0].fileName,
+            type: response.assets[0].type,
+            uri: response.assets[0].uri,
+          };
+
+          {
+            selected
+              ? (setSurrentlySelect(true),
+                setPickFront(true),
+                setFrontLocal(obj))
+              : (setSurrentlySelect1(true),
+                setPickBack(true),
+                setBackLocal(obj));
+          }
+          setShowImage1(response.assets[0].uri);
+          setIsLoading(false);
+        }
+      } catch (e) {
+        setIsLoading(false);
+        console.log("error==> ", e);
+      }
+    });
   };
 
   return (
@@ -277,6 +474,14 @@ function ProfileScreen({ navigation }) {
         position: "absolute",
       }}
     >
+      <PopUpModal
+        modalVisiblePopUp={popUpModalVisible}
+        onPressCancel={() => {
+          setPopUpModalVisible(!popUpModalVisible);
+        }}
+        onPressCamera={LunchCamera1}
+        onPressGallery={LunchGallery1}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -312,26 +517,18 @@ function ProfileScreen({ navigation }) {
                 borderRadius: hp(5),
               }}
             >
-              {/* {userProfilePicture == "" ? ( */}
               {userImage ? (
                 <Image
                   style={styles.imageContainer}
                   source={{ uri: userImage }}
+                  // source={userImage}
                 />
               ) : (
                 <Image
-                  // source={{ uri: userImage }}
                   source={Images.profileUpdate}
                   style={styles.imageContainer}
                 />
               )}
-
-              {/* ) : (
-                <Image
-                  source={{ uri: userProfilePicture }}
-                  style={styles.imageContainer}
-                />
-              )} */}
             </View>
 
             <View
@@ -375,34 +572,52 @@ function ProfileScreen({ navigation }) {
           </View>
 
           {/* ==================== Input Text Container ==================== */}
-          <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <View style={{ justifyContent: "center" }}>
             {/* ==================== username Input Text ==================== */}
-            <View
-              style={{
-                width: wp(80),
-                // borderWidth: 1,
-                borderColor: colors.Plus,
-                justifyContent: "center",
-                marginTop: hp(1),
-              }}
-            >
+
+            <View style={styles.container1}>
+              <View style={[styles.labelContainer1]}>
+                <Text
+                  style={[
+                    { color: colors.white },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
+                >
+                  {"User Name"}
+                </Text>
+              </View>
+
               <View
-                style={{
-                  height: hp(6),
-                  width: wp(80),
-                  borderWidth: 1,
-                  borderColor: colors.white,
-                  justifyContent: "center",
-                  marginTop: hp(1),
-                  borderRadius: hp(2),
-                }}
+                style={[
+                  {
+                    height: hp(6),
+                    width: wp(80),
+                    borderWidth: 1,
+                    borderColor: colors.white,
+                    justifyContent: "center",
+                    marginTop: hp(1),
+                    borderRadius: hp(1),
+                  },
+                  {
+                    borderWidth: toggle ? 1 : 1,
+                    borderColor: toggle ? colors.gray : colors.white,
+                  },
+                ]}
               >
                 <Text
-                  style={{
-                    color: colors.ButtonColor,
-                    fontSize: hp(1.4),
-                    paddingLeft: hp(2),
-                  }}
+                  style={[
+                    {
+                      // color: colors.ButtonColor,
+                      color: colors.white,
+                      fontSize: hp(1.4),
+                      paddingLeft: hp(2),
+                    },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
                 >
                   {userName}
                 </Text>
@@ -411,32 +626,49 @@ function ProfileScreen({ navigation }) {
 
             {/* ==================== Email ID Input Text ==================== */}
 
-            <View
-              style={{
-                width: wp(80),
-                // borderWidth: 1,
-                borderColor: colors.Plus,
-                justifyContent: "center",
-                marginTop: hp(1),
-              }}
-            >
+            <View style={styles.container1}>
+              <View style={styles.labelContainer1}>
+                <Text
+                  style={[
+                    { color: colors.white },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
+                >
+                  {"Email ID"}
+                </Text>
+              </View>
+
               <View
-                style={{
-                  height: hp(6),
-                  width: wp(80),
-                  borderWidth: 1,
-                  borderColor: colors.white,
-                  justifyContent: "center",
-                  marginTop: hp(1),
-                  borderRadius: hp(2),
-                }}
+                style={[
+                  {
+                    height: hp(6),
+                    width: wp(80),
+                    borderWidth: 1,
+                    borderColor: colors.white,
+                    justifyContent: "center",
+                    marginTop: hp(1),
+                    borderRadius: hp(1),
+                  },
+                  {
+                    borderWidth: toggle ? 1 : 1,
+                    borderColor: toggle ? colors.gray : colors.white,
+                  },
+                ]}
               >
                 <Text
-                  style={{
-                    color: colors.ButtonColor,
-                    fontSize: hp(1.4),
-                    paddingLeft: hp(2),
-                  }}
+                  style={[
+                    {
+                      // color: colors.ButtonColor,
+                      color: colors.white,
+                      fontSize: hp(1.4),
+                      paddingLeft: hp(2),
+                    },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
                 >
                   {emailAddress}
                 </Text>
@@ -444,64 +676,226 @@ function ProfileScreen({ navigation }) {
             </View>
 
             {/* ==================== Phone number Input Text ==================== */}
-            <View
-              style={{
-                width: wp(80),
-                // borderWidth: 1,
-                borderColor: colors.Plus,
-                justifyContent: "center",
-                marginTop: hp(1),
-              }}
-            >
+            <View style={styles.container1}>
+              <View style={styles.labelContainer1}>
+                <Text
+                  style={[
+                    { color: colors.white },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
+                >
+                  {"Phone Number"}
+                </Text>
+              </View>
+
               <View
-                style={{
-                  height: hp(6),
-                  width: wp(80),
-                  borderWidth: 1,
-                  borderColor: colors.white,
-                  justifyContent: "center",
-                  marginTop: hp(1),
-                  borderRadius: hp(2),
-                }}
+                style={[
+                  {
+                    height: hp(6),
+                    width: wp(80),
+                    borderWidth: 1,
+                    borderColor: colors.white,
+                    justifyContent: "center",
+                    marginTop: hp(1),
+                    borderRadius: hp(1),
+                  },
+                  {
+                    borderWidth: toggle ? 1 : 1,
+                    borderColor: toggle ? colors.gray : colors.white,
+                  },
+                ]}
               >
                 <Text
-                  style={{
-                    color: colors.ButtonColor,
-                    fontSize: hp(1.4),
-                    paddingLeft: hp(2),
-                  }}
+                  style={[
+                    {
+                      // color: colors.ButtonColor,
+                      color: colors.white,
+                      fontSize: hp(1.4),
+                      paddingLeft: hp(2),
+                    },
+                    {
+                      color: toggle ? colors.gray : colors.white,
+                    },
+                  ]}
                 >
                   {mobileNumber}
                 </Text>
               </View>
             </View>
 
-            {/* ==================== Subscription Input Text ==================== */}
-          </View>
+            {/* ==================== Vehicle info ===================== */}
 
-          {/*================ BUTTON CONTAINER ========== */}
-
-          <View style={styles.ButtonContainer}>
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                // borderWidth: 1,
-                width: wp(88),
-                height: hp(8),
-                // zindex: -2,
-                // position: "absolute",
+            <AppForm
+              initialValues={{
+                vehicleName: getValue?.vehicle_manufacturer,
+                vehicleManufacturer: getValue?.vehicle_manufacturer,
+                vehicleRegistration: getValue?.vehicle_registration_no,
               }}
+              validationSchema={validationSchema}
+              onSubmit={UpdateProfileApi}
+              enableReinitialize={true}
             >
-              <Button
-                title={getTranslatedText("Save")}
-                bgColor={colors.ButtonColor}
-                color={colors.ButtonText}
-                borderRadius={hp(2)}
-                height={hp(5.5)}
-                onPress={() => saveImageAPI()}
-              />
-            </View>
+              <View style={styles.container1}>
+                <View style={styles.labelContainer}>
+                  <Text style={{ color: colors.white }}>{"Vehicle Name"}</Text>
+                </View>
+                {/* <TextInput style={styles.textInput} 
+                /> */}
+                <AppFromField
+                  //  label="First Name"
+                  defaultValue={getValue?.vehicle_name}
+                  width={wp(80)}
+                  placeholderTextColor={"#A9C6E8"}
+                  placeholder="Enter Vehicle Name"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  name="vehicleName"
+                  borderWidth={1}
+                  borderColor={colors.white}
+                />
+              </View>
+
+              <View style={styles.container1}>
+                <View style={styles.labelContainer}>
+                  <Text style={{ color: colors.white }}>
+                    {"Vehicle Manufacturer"}
+                  </Text>
+                </View>
+
+                <AppFromField
+                  //  label="First Name"
+                  defaultValue={getValue?.vehicle_manufacturer}
+                  width={wp(80)}
+                  placeholderTextColor={"#A9C6E8"}
+                  placeholder="Enter Vehicle Manufacturer"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  name="vehicleManufacturer"
+                  borderWidth={1}
+                  borderColor={colors.white}
+                />
+              </View>
+
+              <View style={styles.container1}>
+                <View style={styles.labelContainer}>
+                  <Text style={{ color: colors.white }}>
+                    {"Vehicle Registration Number"}
+                  </Text>
+                </View>
+                {/* <TextInput style={styles.textInput} 
+                /> */}
+                <AppFromField
+                  //  label="First Name"
+                  defaultValue={getValue?.vehicle_registration_no}
+                  width={wp(80)}
+                  placeholderTextColor={"#A9C6E8"}
+                  placeholder="Enter Vehicle Registration Number"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  name="vehicleRegistration"
+                  borderWidth={1}
+                  borderColor={colors.white}
+                />
+              </View>
+
+              {/* ==================== Subscription Input Text ==================== */}
+
+              {/* //==== Upload Driving License Front Image  */}
+              <View style={styles.uploadIconContainer}>
+                <TouchableOpacity
+                  style={styles.uploadSection}
+                  onPress={() => {
+                    setPopUpModalVisible(true);
+                    setModalVisible1(false);
+                    setSelected(true);
+                  }}
+                >
+                  {pickFront == true ? (
+                    <Image source={frontLocal} style={styles.profileImage} />
+                  ) : (
+                    <>
+                      <Image
+                        source={{ uri: FrontImage }}
+                        style={styles.profileImage}
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+                {/* // ======= Camera  */}
+                <TouchableOpacity
+                  style={styles.uploadSection}
+                  onPress={() => {
+                    setPopUpModalVisible(true);
+                    setModalVisible1(false);
+                    setSelected(false);
+                  }}
+                >
+                  {/* {backImage ? ( */}
+
+                  {pickBack == true ? (
+                    <Image source={backLocal} style={styles.profileImage} />
+                  ) : (
+                    <>
+                      <Image
+                        source={{ uri: backImage }}
+                        style={styles.profileImage}
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/*================ BUTTON CONTAINER ========== */}
+              {toggle == false ? (
+                <View style={styles.ButtonContainer}>
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      // borderWidth: 1,
+                      width: wp(88),
+                      height: hp(8),
+                      // zindex: -2,
+                      // position: "absolute",
+                    }}
+                  >
+                    <Button
+                      // title={getTranslatedText("Save")}
+                      title={"Edit Profile"}
+                      bgColor={"white"}
+                      color={colors.ButtonText}
+                      borderRadius={hp(2)}
+                      height={hp(5.5)}
+                      onPress={() => setToggle(!toggle)}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.ButtonContainer}>
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      // borderWidth: 1,
+                      width: wp(88),
+                      height: hp(8),
+                      // zindex: -2,
+                      // position: "absolute",
+                    }}
+                  >
+                    <SubmitButton
+                      title="Save"
+                      backgroundColor={colors.white}
+                      titleColor={colors.ButtonText}
+                      width={"88%"}
+                      height={hp(5.5)}
+                    />
+                  </View>
+                </View>
+              )}
+            </AppForm>
           </View>
 
           <View style={styles.ButtonContainer1}>

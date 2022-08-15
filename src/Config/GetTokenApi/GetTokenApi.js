@@ -13,12 +13,10 @@ const GetTokenApi = (url, apiMethod, token) => {
   try {
     return axios(options)
       .then((response) => {
-        console.log("Get Token API respones", response);
         return response;
       })
 
       .catch((error) => {
-        console.log("trys catch Error is=====> ", error.response);
         return error.response;
       });
   } catch (error) {

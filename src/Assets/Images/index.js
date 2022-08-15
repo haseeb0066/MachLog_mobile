@@ -20,7 +20,8 @@ const Images = {
   AdminIcon: require("./Png/AdminIcon.png"),
   Language: require("./Png/language.png"),
   BackImage: require("./Png/BackImage.png"),
-  
+  HistoryButton: require("./Png/HistoryButton.png"),
+  Subscriptioncard: require("./Png/Subscriptioncard.png"),
 };
 
 export default Images;

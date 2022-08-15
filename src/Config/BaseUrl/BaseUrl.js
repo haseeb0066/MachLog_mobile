@@ -19,6 +19,12 @@ const EndPoints = {
   LogoutUser: BASE_URL + "/user/logout",
   NewRegisterApi: BASE_URL + "/user/add",
   VerifyOTPs: BASE_URL + "/user/verify-otp",
+  GetProfileData: BASE_URL + "/user/view-mobile-profile",
+  UpdateProfileData: BASE_URL + "/user/submit-mobile-profile",
+  MonthlyPakecage: BASE_URL + "/reading/checkreading",
+  MonthlyPostPakecage: BASE_URL + "/reading/update-reading",
+  TimePauseAPI: BASE_URL + "/odometer/trip-pause",
+  TimeResumeAPI: BASE_URL + "/odometer/trip-resume",
 };
 
 export default EndPoints;

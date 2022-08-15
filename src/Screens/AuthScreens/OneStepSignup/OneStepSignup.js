@@ -54,18 +54,19 @@ function OneStepSignup({ navigation }) {
   const [isShowPassword, setIsShowPassword] = useState(true);
   const [reShowPassword, setReShowPassword] = useState(true);
   var hoursMin = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
-
+  const [selected, setSelected] = useState("");
   const [popUpModalVisible, setPopUpModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [FrontImage, setFrontImage] = useState("");
   const [backImage, setBackImage] = useState("");
-  const [selected, setSelected] = useState("");
+
   const [showImage, setShowImage] = useState("");
 
   const phoneInput = useRef(phone_No);
   const [phone_No, setPhone_No] = useState(phoneInput);
 
   const [formatedMobileNO, setFormatedMobileNO] = useState("");
+  console.log("formatedMobileNO", formatedMobileNO);
   const [phoneNumberValidationError, setPhoneNumberValidationError] =
     useState(false);
   const [valid, setIsValid] = useState(false);
@@ -78,23 +79,18 @@ function OneStepSignup({ navigation }) {
     name: "",
     email: "",
     phoneNumber: "",
-    // phoneNumber: "",
 
-    // ========================
     vehicleName: "",
     vehicleManufacturer: "",
     vehicleRegistration: "",
- 
 
-   
     companyID: "",
     companyName: "",
     companyAddress: "",
-    dateOfBirth: "",
 
     // name: "Haseeb",
-    // email: "israr4551@gmail.com",
-    // phoneNumber: "+923005270280",
+    // email: "israr1@gmail.com",
+    // phoneNumber: "+92300543280",
 
     // // ========================
     // vehicleName: "Honda",
@@ -105,18 +101,16 @@ function OneStepSignup({ navigation }) {
     // companyID: "2233",
     // companyName: "XYZ",
     // companyAddress: "qwqew LHR",
-    // dateOfBirth: "22-04-2022",
   };
   const signupValidationSchema = yup.object({
     email: yup
       .string()
-      .label("email")
       .email("Email must be a valid email address")
       .required("Email is required"),
     name: yup.string().required("Name is required"),
     phoneNumber: yup.string().required("Phone number is required feild"),
 
-    //============ Vehciles information ================
+    // //============ Vehciles information ================
     vehicleName: yup.string().required("Vehicle Name is required"),
     vehicleManufacturer: yup
       .string()
@@ -125,15 +119,15 @@ function OneStepSignup({ navigation }) {
       .string()
       .required("Vehicle Registration Number is required"),
 
-    //   ========== Company information =============
+    // //   ========== Company information =============
     companyID: yup.string().required("Company ID is required"),
     companyName: yup.string().required("Company Name is required"),
     companyAddress: yup.string().required("Company Address is required"),
-    dateOfBirth: yup.string().required("Date Of Birth is required"),
+    //dateOfBirth: yup.string().required("Date Of Birth is required"),
   });
   var hoursMinEnd = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
 
-  hoursMinEnd = hoursMinEnd.slice(1, 21);
+  hoursMinEnd = hoursMinEnd.slice(0, 21);
 
   //===== Toast Massage funcation =======//
   const errroemassage = () => {
@@ -153,8 +147,10 @@ function OneStepSignup({ navigation }) {
       });
     }
   };
+  2;
 
-  const testingAPI = async (values) => {
+  const TestingAPI = async (values) => {
+    console.log("value ==>  ", values);
     if (FrontImage.length < 1) {
       console.log("FrontImage ==>   ", FrontImage.length);
 
@@ -256,7 +252,7 @@ function OneStepSignup({ navigation }) {
     return t(text);
   };
 
-  //  ===== Camers open function=======
+  //  ===== Camers signup open function=======
   const LunchCamera = async () => {
     const Options = {
       title: "Choose an Image",
@@ -293,7 +289,7 @@ function OneStepSignup({ navigation }) {
     });
   };
 
-  //===== Gallery Open images =======
+  //===== Gallery signup Open images =======
   const LunchGallery = async () => {
     const Options = {
       title: "Choose an Image",
@@ -363,8 +359,8 @@ function OneStepSignup({ navigation }) {
 
       <PopUpModal
         modalVisiblePopUp={popUpModalVisible}
-        onPress={() => {
-          setPopUpModalVisible(false);
+        onPressCancel={() => {
+          setPopUpModalVisible(!popUpModalVisible);
         }}
         onPressCamera={LunchCamera}
         onPressGallery={LunchGallery}
@@ -435,9 +431,8 @@ function OneStepSignup({ navigation }) {
             <AppForm
               initialValues={userInfo}
               validationSchema={signupValidationSchema}
-              //   onSubmit={errroemassage}
-              onSubmit={testingAPI}
-              //   onSubmit={Submit}
+              onSubmit={TestingAPI}
+              // enableReinitialize={true}
             >
               <AppFromField
                 //  label="First Name"
@@ -463,28 +458,27 @@ function OneStepSignup({ navigation }) {
               />
 
               <AppMobileNoInputField
-                valid={valid}
+                // valid={valid}
                 // defaultValue={""}
                 formatedMobileNO={formatedMobileNO}
                 setFormatedMobileNO={setFormatedMobileNO}
-                setIsValid={setIsValid}
+                // setIsValid={setIsValid}
                 label="Mobile No"
-                laceholderTextColor={colors.white}
+                placeholderTextColor={colors.white}
                 name="phoneNumber"
                 containerStyle={styles.phoneStyle}
                 textContainerStyle={styles.textStyle}
-                codeTextStyle={{ color: colors.white, fontSize: 14 }}
-                textInputStyle={{
-                  height: hp(3),
-                  fontSize: 14,
+                codeTextStyle={{
                   color: colors.white,
-                  borderColor: colors.white,
+                  fontSize: hp(1.7),
+                  paddingTop: hp(0.3),
                 }}
+                textInputStyle={styles.textStyle1}
               />
-              <ValidationErrorMessage
+              {/* <ValidationErrorMessage
                 error={"phone Number should be valid"}
                 visible={phoneNumberValidationError}
-              />
+              /> */}
 
               {/* ========= Vehicle info ============== */}
               <View
@@ -728,7 +722,7 @@ function OneStepSignup({ navigation }) {
                       }}
                     >
                       {time1 == ""
-                        ? hoursMinEnd.slice(0, 9)
+                        ? hoursMinEnd.slice(0, 10)
                         : time1.slice(0, 10)}
                     </Text>
                     {/* )} */}

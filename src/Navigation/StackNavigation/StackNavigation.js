@@ -18,19 +18,16 @@ import ApprovalPending from "../../Screens/AuthScreens/ApprovalPending/ApprovalP
 import SupportScreen from "../../Screens/BottomTabScreens/SupportScreen/SupportScreen";
 import AuthSupportScreen from "../../Screens/AuthScreens/AuthSupportScreen/AuthSupportScreen";
 import { changeLanguage } from "i18next";
-import VehicleInfo from "../../Screens/AuthScreens/VehicleInfo/VehicleInfo";
+import VehicleInfo from "../../Screens/BottomTabScreens/VehicleInfo/VehicleInfo";
 import CompanyInfo from "../../Screens/AuthScreens/CompanyInfo/CompanyInfo";
 import OneStepSignup from "../../Screens/AuthScreens/OneStepSignup/OneStepSignup";
 import Subcription from "../../Screens/AuthScreens/Subcription/Subcription";
+import MonthlyDetail from "../../Screens/BottomTabScreens/MonthlyDetail/MonthlyDetail";
+import PackageHistory from "../../Screens/BottomTabScreens/PackageHistory/PackageHistory";
 
 const Stack = createStackNavigator();
 
 const StackNavigation = () => {
-  // const isLogin = useSelector((state) => state.isLogin);
-  // const { t } = useTranslation();
-  // const getTranslatedText = (text) => {
-  //   return t(text);
-  // };
   const isLogin = useSelector((state) => state.authReducer.isLogin);
   const firstTime = useSelector((state) => state.authReducer.firstTime);
   const CurrentLanguage = useSelector(
@@ -38,14 +35,6 @@ const StackNavigation = () => {
   );
   const [LoginState, setLoginState] = useState("");
   const [LanguageIs, setLanguageIs] = useState("");
-
-  // console.log("islogin==> ", isLogin);
-  // const checkState = async () => {
-  //   const userData = await LocalStorage.getObjectData(PreferenceKeys.UserLogin);
-  //   console.log("userData==> ", userData);
-  //   setLoginState(userData);
-  //   console.log("LoginState==> ", LoginState);
-  // };
 
   useEffect(() => {
     console.log("Stack file useEffect running");
@@ -74,8 +63,11 @@ const StackNavigation = () => {
             name={getTranslatedText("Home")}
             component={HomeScreen}
           /> */}
+          <Stack.Screen name={"VehicleInfo"} component={VehicleInfo} />
           <Stack.Screen name={"Messages"} component={Messages} />
           <Stack.Screen name={"ShowMessage"} component={ShowMessage} />
+          <Stack.Screen name={"MonthlyDetail"} component={MonthlyDetail} />
+          <Stack.Screen name={"PackageHistory"} component={PackageHistory} />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -94,9 +86,6 @@ const StackNavigation = () => {
             <Stack.Screen name={"Signup"} component={Signup} />
             <Stack.Screen name={"SignupOtp"} component={SignupOtp} />
             <Stack.Screen name={"OneStepSignup"} component={OneStepSignup} />
-
-            {/* <Stack.Screen name={"VehicleInfo"} component={VehicleInfo} />
-            <Stack.Screen name={"CompanyInfo"} component={CompanyInfo} /> */}
             <Stack.Screen name={"ForgotPassword"} component={ForgotPassword} />
             <Stack.Screen name={"ResetPassword"} component={ResetPassword} />
             <Stack.Screen name={"ForgotPassOtp"} component={ForgotPassOtp} />
@@ -109,7 +98,6 @@ const StackNavigation = () => {
               component={AuthSupportScreen}
             />
             <Stack.Screen name={"Subcription"} component={Subcription} />
-
             {/* BOTTOM TAP */}
             {/* <Stack.Screen name={"BottomNavigation"} component={BottomNavigation} /> */}
           </Stack.Navigator>
@@ -127,8 +115,7 @@ const StackNavigation = () => {
             <Stack.Screen name={"ForgotPassword"} component={ForgotPassword} />
             <Stack.Screen name={"ResetPassword"} component={ResetPassword} />
             <Stack.Screen name={"ForgotPassOtp"} component={ForgotPassOtp} />
-            <Stack.Screen name={"VehicleInfo"} component={VehicleInfo} />
-            <Stack.Screen name={"CompanyInfo"} component={CompanyInfo} />
+            {/* <Stack.Screen name={"VehicleInfo"} component={VehicleInfo} /> */}
             <Stack.Screen
               name={"ApprovalPending"}
               component={ApprovalPending}

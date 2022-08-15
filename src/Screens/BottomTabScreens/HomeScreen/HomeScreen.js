@@ -10,6 +10,10 @@ import {
   ScrollView,
   Platform,
   Alert,
+  StyleSheet,
+  Modal,
+  TextInput,
+  Dimensions,
 } from "react-native";
 import styles from "./styles";
 import Images from "../../../Assets/Images";
@@ -27,32 +31,45 @@ import DiffIcon from "../../../Assets/Images/Svg/DiffIcon.svg";
 import fonts from "../../../Assets/Fonts/font";
 import GetTokenApi from "../../../Config/GetTokenApi/GetTokenApi";
 import EndPoints from "../../../Config/BaseUrl/BaseUrl";
-import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../../Components/Common/Loader/Loader";
 import Toast from "react-native-simple-toast";
 import MessageIcon from "../../../Assets/Images/Svg/message.svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import BackgroundTimer from "react-native-background-timer";
-import WooCommerceAPI from "react-native-woocommerce-api";
-import axios from "axios";
 import "../../../Assets/Languages/i18n";
 import { useTranslation } from "react-i18next";
 import DropDownPicker from "react-native-dropdown-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { changeLanguage } from "i18next";
 import { LanguageType } from "../../../Redux/Actions/Actions";
-import { getTranslatedText } from "i18next";
 import crashlytics from "@react-native-firebase/crashlytics";
+import MapView, { PROVIDER_GOOGLE, Marker, CarInfo } from "react-native-maps";
+import Button from "../../../Components/Common/Button/Button";
+import SvgComponent from "../../../Components/Common/SvgCustomComponents/SvgCustomComponents";
+import { LocationIcon } from "../../../Assets/Images/SvgImages";
+import Geolocation from "@react-native-community/geolocation";
+import { getDistance, getPreciseDistance, geolib } from "geolib";
+import { useDispatch, useSelector } from "react-redux";
+import { originLat, originLong } from "../../../Redux/Actions/Actions";
+import apiClient from "../../../Config/Client";
 
 function HomeScreen({ navigation }) {
   const [isDisable, setIsDisable] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const token = useSelector((state) => state.authReducer.token);
+  const [selected, setSelected] = useState("");
+  const [popUpModalVisible, setPopUpModalVisible] = useState(false);
+  // const [modalVisible, setModalVisible] = useState(false);
+  const [FrontImage, setFrontImage] = useState("");
+  const [UserId, setUserId] = useState("");
+  const user_id = useSelector((state) => state.odometerReducer?.user_id);
 
   //================= background Timer ==================
   const [secondLeft, setSecondLeft] = useState(0);
   const [onTime, setOnTime] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
   const { t } = useTranslation();
   const getTranslatedText = (text) => {
     return t(text);
@@ -70,11 +87,20 @@ function HomeScreen({ navigation }) {
 
   const startTimer = () => {
     BackgroundTimer.runBackgroundTimer(() => {
-      //code that will be called every 3 seconds
-      setSecondLeft((secs) => {
-        if (secs >= 0) return secs + 1;
-        else return 0;
-      });
+      //code that will be called every 1 seconds
+      if (dataTimer) {
+        // console.log("resume check running==>   ", dataTimer);
+        setSecondLeft((dataTimer) => {
+          if (dataTimer >= 0) return dataTimer + 1;
+          else return 0;
+        });
+      } else {
+        setSecondLeft((secs) => {
+          if (secs >= 0) return secs + 1;
+          else return 0;
+        });
+      }
+
       // console.log("seconds ==> ", secondLeft);
     }, 1000);
   };
@@ -89,20 +115,31 @@ function HomeScreen({ navigation }) {
     let hours = Math.floor(secondLeft / 3600);
     let mins = Math.floor((secondLeft - hours * 3600) / 60);
     let second = secondLeft - hours * 3600 - mins * 60;
-    let miliSecond = secondLeft - hours * 3600 - mins * 60 * 60;
 
     let displayHour = hours < 10 ? `0${hours}` : hours;
     let displayMins = mins < 10 ? `0${mins}` : mins;
     let displaySecond = second < 10 ? `0${second}` : second;
-    let displayMili = miliSecond < 10 ? `0${miliSecond}` : miliSecond;
 
     return {
       displayHour,
       displayMins,
       displaySecond,
-      displayMili,
     };
   };
+
+  useEffect(() => {
+    console.log("time useEffect");
+
+    let interval = null;
+    if (timeOn) {
+      interval = setInterval(() => {
+        setTime((previous) => previous + 10);
+      }, 10);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [timeOn]);
 
   //================= background Timer ==================
 
@@ -136,24 +173,16 @@ function HomeScreen({ navigation }) {
   };
 
   useEffect(() => {
+    console.log("camera useEffect");
+    // sendPasueTime();
+    // getOneTimeLocation();
+    // monthlyCheck();
     if (Platform.OS === "ios") {
       null;
     } else {
       requestCameraPermission();
     }
   }, []);
-
-  useEffect(() => {
-    let interval = null;
-    if (timeOn) {
-      interval = setInterval(() => {
-        setTime((previous) => previous + 10);
-      }, 10);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [timeOn]);
 
   // ================= Validation funtion with formik ==========================
   const dispatch = useDispatch();
@@ -170,6 +199,8 @@ function HomeScreen({ navigation }) {
   const [totalTripTime, setTotalTripTime] = useState("");
   const [userame, SetUserame] = useState("");
   const [sTime, setSTime] = useState("");
+  const [pause, setPause] = useState("");
+  const [dataTimer, setDataTimer] = useState("");
 
   const GetRequest = async () => {
     setIsLoading(true);
@@ -223,11 +254,11 @@ function HomeScreen({ navigation }) {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      GetRequest();
-    }, [])
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     GetRequest();
+  //   }, [])
+  // );
   //================== DROP DOWN =================
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -244,7 +275,9 @@ function HomeScreen({ navigation }) {
   const [currentLanguage, setLanguage] = useState("");
 
   useEffect(() => {
-    console.log("currentLanguage===>  ", CurrentLanguage);
+    console.log("language useEffect");
+
+    // console.log("currentLanguage===>  ", CurrentLanguage);
     // if (CurrentLanguage == null) {
     //   setValue("en");
     // } else {
@@ -255,6 +288,242 @@ function HomeScreen({ navigation }) {
   }, [currentLanguage, value]);
 
   //================= LANGUAGE ==================
+  const monthlyCheck = async () => {
+    setIsLoading(true);
+    const res = await GetTokenApi(EndPoints.MonthlyPakecage, "GET", token);
+    if (res.status === 200) {
+      setIsLoading(false);
+      console.log("200 MonthlyPakecage ==>", res.data);
+    } else {
+      setIsLoading(false);
+      if (res.data.success == false) {
+        navigation.navigate("MonthlyDetail");
+      }
+      console.log("else MonthlyPakecage ==>  ", res.data);
+    }
+  };
+
+  //============== Google map working ===========
+  const [currentLongitude, setCurrentLongitude] = useState("");
+  const [currentLatitude, setCurrentLatitude] = useState("");
+  const [locationStatus, setLocationStatus] = useState("");
+  const [PasueTimer, setPasueTimer] = useState("");
+
+  const originSavedLat = useSelector(
+    (state) => state.authReducer.originLatState
+  );
+  const originSavedLong = useSelector(
+    (state) => state.authReducer.originLongState
+  );
+
+  const screen = Dimensions.get("screen");
+  const ASPECT_RATIO = screen.width / screen.height;
+  const LATITUDE_DELTA = 0.9222;
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+
+  useEffect(() => {
+    console.log("location useEffect");
+    const requestLocationPermission = async () => {
+      if (Platform.OS === "ios") {
+        getOneTimeLocation();
+        subscribeLocationLocation();
+      } else {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: "Location Access Required",
+              message: "This App needs to Access your location",
+            }
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            //To Check, If Permission is granted
+            console.log("location permission given");
+            getOneTimeLocation();
+            subscribeLocationLocation();
+          } else {
+            setLocationStatus("Permission Denied");
+            console.log("location permission  Denied");
+          }
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+    };
+    requestLocationPermission();
+    // return () => {
+    //   Geolocation.clearWatch(1);
+    // };
+  }, []);
+
+  //====================== give you current location ===============
+  const getOneTimeLocation = () => {
+    setLocationStatus("Getting Location ...");
+    Geolocation.getCurrentPosition(
+      //Will give you the current location
+      (position) => {
+        console.log("Getting Location ...");
+        setLocationStatus("You are Here");
+
+        //getting the Longitude from the location json
+        const currentLongitude = parseFloat(position.coords.longitude);
+
+        //getting the Latitude from the location json
+        const currentLatitude = parseFloat(position.coords.latitude);
+
+        //Setting Longitude state
+        setCurrentLongitude(currentLongitude);
+        dispatch(originLat(currentLatitude));
+        dispatch(originLong(currentLongitude));
+
+        // console.log("currentLongitude ===> ", currentLongitude);
+        //Setting Longitude state
+        setCurrentLatitude(currentLatitude);
+        // console.log("currentLatitude ===> ", currentLatitude);
+      },
+      (error) => {
+        console.log("error ==> ", error.message);
+        setLocationStatus(error.message);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 10000,
+      }
+    );
+  };
+
+  const getdestinationLocation = () => {
+    Geolocation.getCurrentPosition(
+      //Will give you the current location
+      (position) => {
+        console.log("get destination Location");
+        //getting the Longitude from the location json
+        const currentLong = parseFloat(position.coords.longitude);
+        //getting the Latitude from the location json
+        const currentLat = parseFloat(position.coords.latitude);
+        //Setting Longitude state
+        setCurrentLongitude(1.1832);
+        console.log("destination lat ===> ", currentLongitude);
+        setCurrentLatitude(17.9064);
+        console.log("destination long ===> ", currentLatitude);
+      },
+      (error) => {
+        console.log("ios location else part");
+        setLocationStatus(error.message);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 1000,
+      }
+    );
+
+    const AccurateDistance = getPreciseDistance(
+      { latitude: originSavedLat, longitude: originSavedLong },
+      { latitude: currentLatitude, longitude: currentLongitude }
+      // (accuracy = 1)
+    );
+    setIsLoading(true);
+    setTimeout(() => {
+      let KM = AccurateDistance / 1000;
+      let miles = KM * 0.6213;
+
+      setIsLoading(false);
+      console.log("AccurateDistance ==> ", miles.toFixed(2));
+      navigation.navigate("OdometerScreen", {
+        Type: "end",
+        setOnTime: setOnTime,
+        Distance: miles.toFixed(2),
+      });
+    }, 1000);
+  };
+
+  const subscribeLocationLocation = () => {
+    watchID = Geolocation.watchPosition(
+      (position) => {
+        //Will give you the location on location change
+        setLocationStatus("You are Here");
+
+        //getting the Longitude, Latitude from the location json
+        const currentLongitude = parseFloat(position.coords.longitude);
+        const currentLatitude = parseFloat(position.coords.latitude);
+        alert("currentLatitude : ", currentLatitude);
+        alert("currentLongitude : ", currentLongitude);
+
+        //Setting Longitude state
+        setCurrentLongitude(currentLongitude);
+        setCurrentLatitude(currentLatitude);
+      },
+      (error) => {
+        setLocationStatus(error.message);
+      },
+      {
+        enableHighAccuracy: false,
+        maximumAge: 5000,
+      }
+    );
+  };
+
+  const sendResumeTime = async () => {
+    var formdata = new FormData();
+    formdata.append("id", user_id);
+
+    console.log("formdata ===> ", formdata);
+    setIsLoading(true);
+    const result = await apiClient.post("/odometer/trip-resume", formdata, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+    if (result.ok) {
+      setIsLoading(false);
+      console.log("res=====>   ", result.data.message.timer);
+      setDataTimer(result.data.message.timer);
+      // Toast.show(result.data.data, Toast.LONG);
+      // alert(result.data.data);
+    } else {
+      setIsLoading(false);
+      console.log("else =====>   ", result?.data);
+      // alert(result?.data.message);
+      // Toast.show(result?.data.message, Toast.LONG);
+    }
+  };
+
+  const sendPasueTime = async () => {
+    console.log("sendPasueTime API calling");
+    let timerr =
+      Clockify().displayHour +
+      "-" +
+      Clockify().displayMins +
+      "-" +
+      Clockify().displaySecond;
+    // setPasueTimer(timerr);
+    var formdata = new FormData();
+    formdata.append("id", user_id);
+    formdata.append("timer", timerr);
+
+    console.log("formdata ===> ", formdata);
+    setIsLoading(true);
+    const result = await apiClient.post("/odometer/trip-pause", formdata, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+    if (result.ok) {
+      setIsLoading(false);
+      console.log("res=====>   ", result.data.data);
+      setTimeOn(false);
+      setPause(1);
+      // alert(result.data.data);
+    } else {
+      setIsLoading(false);
+      console.log("else =====>   ", result?.data);
+      // alert(result?.data.message);
+    }
+  };
 
   return (
     <ImageBackground
@@ -315,6 +584,7 @@ function HomeScreen({ navigation }) {
                     {value}
                   </Text>
                 </View>
+
                 <TouchableOpacity
                   style={{ flex: 0.6 }}
                   onPress={() => {
@@ -368,6 +638,117 @@ function HomeScreen({ navigation }) {
                 <MessageIcon />
               </TouchableOpacity>
             </View>
+            {/* ============== Google map ============ */}
+            <View
+              style={{
+                height: hp(40),
+                width: wp(100),
+                // zIndex: 1,
+              }}
+            >
+              <View
+                style={{
+                  height: hp(4),
+                  width: wp(100),
+
+                  zIndex: 1,
+                  alignItems: "flex-end",
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    height: hp(4),
+                    width: wp(20),
+                    borderWidth: 1,
+                    borderColor: "red",
+                    alignItems: "center",
+                    marginTop: hp(1),
+                    marginRight: hp(1),
+                    justifyContent: "center",
+                    backgroundColor: "white",
+                    borderRadius: hp(1),
+                  }}
+                  disabled={buttonToggle ? false : true}
+                  onPress={() => {
+                    getdestinationLocation();
+                    setButtonToggle(!buttonToggle);
+                    setIsDisable(false);
+                  }}
+                >
+                  <Text style={{ color: "red" }}> end </Text>
+                </TouchableOpacity>
+              </View>
+              <MapView
+                provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+                style={styles.map}
+                showsMyLocationButton={false}
+                showsUserLocation={true}
+                // showsTraffic={true}
+                zoomEnabled={true}
+                region={{
+                  // latitude: currentLongitude,
+                  // longitude: currentLatitude,
+                  latitude: currentLatitude != "" ? currentLatitude : 31.4758,
+                  longitude:
+                    currentLongitude != "" ? currentLongitude : 74.3426,
+                  latitudeDelta: LATITUDE_DELTA,
+                  longitudeDelta: LONGITUDE_DELTA,
+                }}
+                // onPress={() => {
+                //   menuRef.current.snapTo(1);
+                //   vehiclesRef.current.snapTo(2);
+                // }}
+              >
+                {/* {CarInfo.map(car => {
+    return (
+      <Marker
+        key={car.DeviceID}
+        coordinate={{
+          latitude: car.Lt,
+          longitude: car.Ln,
+        }}
+        onPress={() => vehiclesRef.current.snapTo(1)}>
+        <Animated.View style={[styles.markerWrap]}>
+          <Text style={styles.numberPlate} numberOfLines={1}>
+            {car.NumberPlate}
+          </Text>
+          <Animated.Image
+            source={Car}
+            style={styles.marker}
+            resizeMode="cover"
+          />
+        </Animated.View>
+      </Marker>
+    );
+  })} */}
+                {/* {CarInfo.map((car) => {
+                  return (
+                    <CarMarker
+                      key={car.DeviceID}
+                      car={car}
+                      onOpen={() => {
+                        vehiclesRef.current.snapTo(1);
+                        setSelectedVehicle(car);
+                      }}
+                    />
+                  );
+                })} */}
+                <Marker
+                  coordinate={{
+                    latitude: currentLatitude != "" ? currentLatitude : 31.4758,
+                    longitude:
+                      currentLongitude != "" ? currentLongitude : 74.3426,
+                  }}
+                  title={"Arfa Kareem Tower"}
+                  description={"Testing purpose "}
+                >
+                  <View style={{ height: hp(5) }}>
+                    <SvgComponent svgMarkup={LocationIcon} />
+                  </View>
+                </Marker>
+              </MapView>
+            </View>
+
             {/* ============== user name ============ */}
             <View
               style={{
@@ -400,8 +781,9 @@ function HomeScreen({ navigation }) {
                     paddingTop: hp(0.3),
                   }}
                 >
-                  {/* {userName} */}
-                  {getTranslatedText("hello")}
+                  {/* {getTranslatedText("hello")}
+                   */}
+                  {userName}
                 </Text>
               </View>
             </View>
@@ -512,8 +894,16 @@ function HomeScreen({ navigation }) {
                       alignItems: "center",
                       backgroundColor: colors.startButton,
                     }}
+                    disabled={isDisable ? false : true}
                     onPress={() => {
-                      checkSubcribtion();
+                      // checkSubcribtion();
+                      navigation.navigate("OdometerScreen", {
+                        Type: "start",
+                        setOnTime: setOnTime,
+                        Distance: "",
+                      });
+                      setButtonToggle(!buttonToggle);
+                      // alert("start");
                     }}
                   >
                     <Text
@@ -523,6 +913,45 @@ function HomeScreen({ navigation }) {
                       }}
                     >
                       {getTranslatedText("StartTrip")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : pause == "" ? (
+                <View
+                  style={{
+                    flex: 0.4,
+                    width: wp(100),
+                    // borderWidth: 1,
+                    borderColor: "white",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <TouchableOpacity
+                    style={{
+                      width: wp(70),
+                      height: hp(5.5),
+                      // borderWidth: 1,
+                      borderRadius: hp(2),
+                      borderColor: "white",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: colors.startButton,
+                    }}
+                    onPress={() => {
+                      sendPasueTime();
+                      setOnTime((current) => !current);
+                      setPause(1);
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: colors.white,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {/* {getTranslatedText("EndTrip")} */}
+                      {"Pause"}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -546,17 +975,13 @@ function HomeScreen({ navigation }) {
                       borderColor: "white",
                       justifyContent: "center",
                       alignItems: "center",
-                      backgroundColor: colors.endButton,
+                      backgroundColor: colors.startButton,
                     }}
                     onPress={() => {
                       setTimeOn(false);
-                      // setOnTime((current) => !current);
-                      setIsDisable(false);
-                      navigation.navigate("OdometerScreen", {
-                        Type: "end",
-                        setOnTime: setOnTime,
-                      });
-                      setButtonToggle(!buttonToggle);
+                      setOnTime((current) => !current);
+                      setPause("");
+                      sendResumeTime();
                     }}
                   >
                     <Text
@@ -565,7 +990,8 @@ function HomeScreen({ navigation }) {
                         fontWeight: "700",
                       }}
                     >
-                      {getTranslatedText("EndTrip")}
+                      {/* {getTranslatedText("EndTrip")} */}
+                      {"Resume"}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -704,20 +1130,22 @@ function HomeScreen({ navigation }) {
                   flexDirection: "row",
                   justifyContent: "center",
                   alignItems: "center",
-                  marginBottom: hp(5),
+                  // marginBottom: hp(5),
+                  // paddingBottom: hp(1),
                 }}
               >
                 <View
                   style={{
                     height: hp(6),
                     width: wp(90),
-                    // borderWidth: 1,
+                    borderWidth: 3,
                     borderColor: "white",
                     flexDirection: "row",
                     borderRadius: hp(2),
                     // backgroundColor: colors.white,
                     backgroundColor: colors.white,
                     flexDirection: "row",
+                    // marginBottom: hp(5),
                   }}
                 >
                   {/* ============== 1 Container================= */}
@@ -728,7 +1156,6 @@ function HomeScreen({ navigation }) {
                       // borderWidth: 1,
                       justifyContent: "center",
                       alignItems: "center",
-                      // marginLeft: hp(1),
                     }}
                   ></View>
                   {/* ============== 2 Container================= */}
@@ -787,6 +1214,35 @@ function HomeScreen({ navigation }) {
                     </Text>
                   </View>
                 </View>
+              </View>
+
+              {/* ============== extra Container================= */}
+
+              <View
+                style={{
+                  height: hp(20),
+                  // borderWidth: 1,
+                  borderColor: "white",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingBottom: hp(5),
+                }}
+              >
+                <View
+                  style={{
+                    height: hp(6),
+                    width: wp(90),
+                    // borderWidth: 3,
+                    borderColor: "white",
+                    flexDirection: "row",
+                    borderRadius: hp(2),
+                    // backgroundColor: colors.white,
+                    // backgroundColor: colors.white,
+                    flexDirection: "row",
+                    // marginBottom: hp(5),
+                  }}
+                ></View>
               </View>
             </View>
           </ScrollView>

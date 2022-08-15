@@ -24,15 +24,16 @@ function ShowMessage({ navigation, route }) {
   const { title, message } = route.params;
 
   // ================= Validation funtion with formik ==========================
-  const userInfo = {
-    email: title,
-    message: message,
-  };
+
   const { t } = useTranslation();
   const getTranslatedText = (text) => {
     return t(text);
   };
 
+  const userInfo = {
+    email: title,
+    message: message,
+  };
   const validationSchema = yup.object({
     email: yup.string().required("Email is required"),
     message: yup.string().required("Please describe your issue"),

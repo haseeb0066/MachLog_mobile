@@ -26,14 +26,14 @@ function AppButton({
   svgIcon,
   fontWeight = "bold",
   borderWidth,
-  borderRadius = 10,
+  borderRadius = hp(1.5),
   height,
-  padding = Platform.OS === "android" ? hp(2) : hp(1.7),
+  padding = Platform.OS === "android" ? hp(0) : hp(0),
   buttonContainerProps,
   textStyleProps,
 }) {
   let text = {
-    fontSize: hp(1.8),
+    fontSize: hp(1.6),
     //textTransform: "capitalize",
     fontWeight: "bold",
     color: titleColor,
@@ -45,6 +45,8 @@ function AppButton({
       style={[
         styles.button,
         {
+          justifyContent: "center",
+          alignItems: "center",
           backgroundColor: backgroundColor,
           marginTop: marginTop,
           borderColor: borderColor,
@@ -83,7 +85,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: Platform.OS === "android" ? hp(1.7) : hp(10),
-
     marginVertical: hp(1.2),
     alignSelf: "center",
   },

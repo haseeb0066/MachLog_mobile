@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     height: 17,
     borderWidth: 0,
     marginLeft: wp(3),
-    tintColor: colors.WHITE,
+    tintColor: colors.white,
     resizeMode: "contain",
     // borderColor:'red',
   },

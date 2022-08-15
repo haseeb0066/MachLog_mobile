@@ -31,6 +31,7 @@ import { create } from "apisauce";
 import TokenAPIs from "../../../Config/TokenApis/TokenAPIs";
 
 function SignupOtp({ navigation, route }) {
+  // function SignupOtp({ navigation }) {
   const [verCode, setVerCode] = useState("");
   const [time, setTime] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -93,14 +94,14 @@ function SignupOtp({ navigation, route }) {
     if (res.status === 200) {
       setIsLoading(false);
       // console.log("if running response===>  ", res.data.message);
-      Toast.show(res.data.message, Toast.LONG);
+      // Toast.show(res.data.message, Toast.LONG);
       alert(res.data.message);
       // navigation.navigate("Login");
       navigation.navigate("Subcription");
     } else {
       setIsLoading(false);
       // console.log("else ===>  ", res.data.message);
-      Toast.show(res.data.message, Toast.LONG);
+      // Toast.show(res.data.message, Toast.LONG);
       alert(res.data.message);
     }
   };
@@ -207,7 +208,7 @@ function SignupOtp({ navigation, route }) {
           <View
             style={{
               width: wp(80),
-              height: hp(5),
+              height: hp(6),
               // borderWidth: 2,
               borderColor: colors.white,
               justifyContent: "center",
@@ -234,6 +235,7 @@ function SignupOtp({ navigation, route }) {
             height: hp(9),
             // borderWidth: 2,
             borderColor: colors.white,
+            marginTop: hp(5),
           }}
         >
           <View style={styles.inputView1}>
@@ -270,7 +272,7 @@ function SignupOtp({ navigation, route }) {
           <View
             style={{
               width: wp(80),
-              //   borderWidth: 2,
+              // borderWidth: 2,
               borderColor: colors.white,
             }}
           >
@@ -290,7 +292,7 @@ function SignupOtp({ navigation, route }) {
             style={{
               // marginTop: hp(5),
               width: wp(80),
-              height: hp(5),
+              height: hp(6),
               // borderWidth: 2,
               borderColor: colors.white,
               justifyContent: "center",
@@ -314,6 +316,7 @@ function SignupOtp({ navigation, route }) {
             height: hp(9),
             // borderWidth: 2,
             borderColor: colors.white,
+            marginTop: hp(5),
           }}
         >
           <View style={styles.inputView1}>

@@ -5,3 +5,5 @@ export const USER_TOKEN = "USER_TOKEN";
 export const FIRST_TIME = "FIRST_TIME";
 export const PROFILE_PICTURE = "PROFILE_PICTURE";
 export const LANGUAGE_TYPE = "LANGUAGE_TYPE";
+export const ORIGIN_LAT = "ORIGIN_LAT";
+export const ORIGIN_LONG = "ORIGIN_LONG";

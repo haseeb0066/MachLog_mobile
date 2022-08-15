@@ -23,10 +23,12 @@ function AppMobileNoInputField({
   valid,
   setIsValid,
   placeholder,
+  placeholderTextColor,
   //   formattedValue,
   //   setFormattedValue,
   formatedMobileNO,
   setFormatedMobileNO,
+  textInputStyle,
   // numberOfLines,
   ...otherProps
 }) {
@@ -53,21 +55,30 @@ function AppMobileNoInputField({
   }, [value]);
   // console.log(errors[name], touched[name], name);
   return (
-    <View style={{}}>
+    <View>
       <PhoneInput
         ref={phoneInput}
         // defaultValue={values[name]}
+        color={"white"}
+        placeholder={""}
+        placeholderTextColor={placeholderTextColor}
+        textInputStyle={textInputStyle}
+        keyboardType="phone-pad"
+        // textInputStyle={{
+        //   color: "white",
+        //   backgroundColor: colors.ButtonText,
+        //   alignContent: "center",
+        // }}
         disableArrowIcon={true}
         countryPickerProps={false}
         maxLength={8}
-        placeholder={placeholder}
         value={values[name]}
         defaultCode="FI"
         layout="first"
         onChangeText={(text) => {
           setFieldValue(name, text);
           setValue(text);
-          setIsValid(phoneInput.current?.isValidNumber(text));
+          // setIsValid(phoneInput.current?.isValidNumber(text));
         }}
         //  onChangeText={text => setValue(text)}
         onChangeFormattedText={(text) => {

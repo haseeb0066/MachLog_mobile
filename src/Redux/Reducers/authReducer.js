@@ -6,6 +6,8 @@ import {
   FIRST_TIME,
   PROFILE_PICTURE,
   LANGUAGE_TYPE,
+  ORIGIN_LAT,
+  ORIGIN_LONG,
 } from "../Actions/ActionsTypes";
 
 const INITIAL_STATE = {
@@ -20,6 +22,8 @@ const INITIAL_STATE = {
   firstTime: false,
   profilePIcture: "",
   CurrentLanguage: "Eng",
+  originLatState: "",
+  originLongState: "",
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -66,6 +70,20 @@ export default (state = INITIAL_STATE, action) => {
       return {
         ...state,
         token: action.payload,
+      };
+
+    case ORIGIN_LAT:
+      console.log("ORIGIN_LAT reducer ==> ", action.payload);
+      return {
+        ...state,
+        originLatState: action.payload,
+      };
+
+    case ORIGIN_LONG:
+      console.log("ORIGIN_LONG reducer ==> ", action.payload);
+      return {
+        ...state,
+        originLongState: action.payload,
       };
 
     case PROFILE_PICTURE:

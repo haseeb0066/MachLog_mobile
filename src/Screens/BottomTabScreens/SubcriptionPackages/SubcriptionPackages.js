@@ -333,6 +333,10 @@ function SubcriptionPackages({ navigation }) {
             navigation.goBack();
           }}
           tintColor={colors.white}
+          rightIconTwoPath={Images.HistoryButton}
+          onRightIconTwoPress={() => {
+            navigation.navigate("PackageHistory");
+          }}
         />
       </View>
 

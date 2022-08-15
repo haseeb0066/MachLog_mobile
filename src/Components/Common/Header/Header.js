@@ -98,7 +98,10 @@ export default class Header extends Component {
         </View>
         <View style={styles.headerMenu}>
           <TouchableOpacity
-            style={[styles.headerMenu, { marginLeft: wp(7) }]}
+            style={[
+              styles.headerMenu,
+              { paddingRight: this.props.paddingRightt },
+            ]}
             onPress={this.props.onRightIconTwoPress}
           >
             {this.props.rightIconTwoPath !== undefined && (
@@ -112,9 +115,10 @@ export default class Header extends Component {
                         width: this.props.rightIconSize,
                       }
                     : {
-                        height: 20,
-                        width: 20,
-                        tintColor: this.props.tintColor,
+                        height: hp(5),
+                        width: wp(23),
+                        // borderWidth: 1,
+                        tintColor: "",
                       },
                 ]}
                 source={this.props.rightIconTwoPath}
@@ -135,7 +139,7 @@ export default class Header extends Component {
                     : {
                         height: 20,
                         width: 20,
-                        tintColor: this.props.tintColorRightOne,
+                        // tintColor: ,
                       },
                 ]}
                 source={this.props.rightIconOnePath}
@@ -192,6 +196,6 @@ const styles = StyleSheet.create({
     borderRadius: wp(0.5),
   },
   img: {
-    tintColor: colors.white,
+    tintColor: colors.bottomBarText,
   },
 });

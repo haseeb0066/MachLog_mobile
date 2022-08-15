@@ -10,6 +10,7 @@ function SubmitButton({
   marginTop,
   loading,
   width,
+  height,
   ...props
 }) {
   const { handleSubmit } = useFormikContext();
@@ -22,6 +23,7 @@ function SubmitButton({
       title={title}
       onPress={handleSubmit}
       width={width}
+      height={height}
       {...props}
     />
   );

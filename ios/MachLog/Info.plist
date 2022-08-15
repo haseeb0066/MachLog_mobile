@@ -38,7 +38,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Camera Usage</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>use for lat long</string>
+	<string>Location access required to run the app</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Gallery Usage</string>
 	<key>UIAppFonts</key>

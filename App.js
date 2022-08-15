@@ -15,11 +15,17 @@ import NetInfo from "@react-native-community/netinfo";
 import Toast from "react-native-toast-message";
 import crashlytics from "@react-native-firebase/crashlytics";
 import CompanyInfo from "./src/Screens/AuthScreens/CompanyInfo/CompanyInfo";
-import VehicleInfo from "./src/Screens/AuthScreens/VehicleInfo/VehicleInfo";
 import Subcription from "./src/Screens/AuthScreens/Subcription/Subcription";
+import { enableLatestRenderer } from "react-native-maps";
+import VehicleInfo from "./src/Screens/BottomTabScreens/VehicleInfo/VehicleInfo";
+import SignupOtp from "./src/Screens/AuthScreens/SignupOtp/SignupOtp";
 
 export default function App() {
   const [user, setUser] = useState();
+  useEffect(() => {
+    enableLatestRenderer();
+    requestUserPermission();
+  }, []);
   PushNotification.createChannel(
     {
       channelId: "channel-id", // (required)
@@ -80,10 +86,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    requestUserPermission();
-  }, []);
-
-  useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       if (!state.isConnected && !state.isInternetReachable)
         Toast.show("Please check your internet connection");
@@ -100,7 +102,7 @@ export default function App() {
   useEffect(() => {
     crashlytics().log("App mounted.");
     crashlytics().crash();
-    console.log("==== crashlytics ====");
+    // console.log("==== crashlytics ====");
     onSignIn({
       uid: "Aa0Bb1Cc2Dd3Ee4Ff5Gg6Hh7Ii8Jj9",
       username: "Haseeb Sheikh",
@@ -126,7 +128,7 @@ export default function App() {
   const [userCounts, setUserCounts] = useState(null);
 
   function updateUserCounts() {
-    console.log("=== updateUserCounts ===");
+    // console.log("=== updateUserCounts ===");
     crashlytics().log("Updating user count.");
     let users = false;
     try {
@@ -156,7 +158,8 @@ export default function App() {
       <PersistGate loading={null} persistor={persistor}>
         <View style={{ flex: 1 }}>
           <StackNavigation />
-          {/* <Subcription /> */}
+          {/* <VehicleInfo /> */}
+          {/* <SignupOtp /> */}
         </View>
         <Toast />
       </PersistGate>

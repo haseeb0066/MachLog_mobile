@@ -31,12 +31,14 @@ import { useDispatch, useSelector } from "react-redux";
 import momentTz from "moment-timezone";
 import apiClient from "../../../Config/Client";
 import { useTranslation } from "react-i18next";
+import Images from "../../../Assets/Images";
+import { UserId } from "../../../Redux/Actions/OdometerActions/OdometerActions";
 
 function OdometerScreen({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [workType1, setWorkType1] = useState("0");
-  const { Type, setOnTime } = route.params;
+  const { Type, setOnTime, Distance } = route.params;
   const user_id = useSelector((state) => state.odometerReducer.user_id);
   const { t } = useTranslation();
 
@@ -102,12 +104,13 @@ function OdometerScreen({ navigation, route }) {
     setEndSelected("end");
   };
 
-  var hoursMin = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
-  var hoursMinEnd = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
+  let hoursMin = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
+  let hoursMinEnd = moment().format("YYYY-MM-DDTHH:mm:ss.sssZ");
 
-  hoursMinEnd = hoursMinEnd.slice(0, 21);
-  hoursMin = hoursMin.slice(0, 21);
-  console.log("hoursMin =======>   ", hoursMin);
+  hoursMinEnd = hoursMinEnd.slice(0, 19);
+  hoursMin = hoursMin.slice(0, 19);
+  // console.log("hoursMin =======>   ", hoursMin);
+  // console.log("hoursMinEnd =======>   ", hoursMinEnd);
 
   const setStartTrip = (t) => {
     let timeString = moment(t).format();
@@ -150,7 +153,7 @@ function OdometerScreen({ navigation, route }) {
       .required("Meter reading is required"),
 
     // Purpose: yup.string().required("Purpose is required"),
-    Kilometers: yup.number().required("Kilometers is required"),
+    // Kilometers: yup.number().required("Kilometers is required"),
   });
 
   const LunchCamera = async () => {
@@ -221,18 +224,19 @@ function OdometerScreen({ navigation, route }) {
 
   const SaveEndDetail = async (values) => {
     console.log("................. End Function ................. ");
-    console.log("End time ==>", hoursMinEnd);
+    // console.log("End time ==>", hoursMinEnd);
     if (userImage == "") {
       // Toast.show("Please select image", Toast.LONG);
       alert("Please select image");
     } else {
       var formdata = new FormData();
       formdata.append("id", user_id);
-      formdata.append("end_date_time", hoursMinEnd);
+      // formdata.append("id", 25);
+      formdata.append("end_date_time", hoursMin);
       formdata.append("end_odomiter_value", values.meterReading);
       formdata.append("end_odo_miter_image", userImage);
       formdata.append("end_reading", values.meterReading);
-      formdata.append("total_distance", values.Kilometers);
+      formdata.append("total_distance", Distance);
 
       console.log("formdata  ===>   ", formdata);
       setIsLoading(true);
@@ -290,14 +294,19 @@ function OdometerScreen({ navigation, route }) {
         dispatch(UserId(result?.data?.id));
       } else {
         setIsLoading(false);
+        console.log("else =====>   ", result?.data);
+
         if (result?.data?.message == "Your Ride is Already in process") {
           alert(result?.data?.message);
           if (result?.data?.data?.status == 1) {
+            console.log("status == 1 ");
             setOnTime((current) => !current);
+            dispatch(UserId(result?.data?.data?.id));
             navigation.goBack();
           }
         } else {
-          console.log("else =====>   ", result?.data);
+          console.log("else else =====>   ", result?.data);
+          // console.log("id =====>   ", result?.data?.data?.id);
           navigation.goBack();
           alert(result?.data?.message);
         }
@@ -333,10 +342,10 @@ function OdometerScreen({ navigation, route }) {
         <View style={styles.headerContainer}>
           <Header
             title={getTranslatedText("ODOMETER")}
-            // leftIconPath={Images.backArrow}
-            // onLeftIconPress={() => {
-            //   navigation.goBack();
-            // }}
+            leftIconPath={Images.backArrow}
+            onLeftIconPress={() => {
+              navigation.goBack();
+            }}
             tintColor={colors.white}
           />
         </View>
@@ -348,7 +357,6 @@ function OdometerScreen({ navigation, route }) {
           }
           onSubmit={(values) => {
             Type == "start" ? SaveStartDetail(values) : SaveEndDetail(values);
-            // SaveOdometerDetail(values);
           }}
         >
           {({
@@ -762,33 +770,20 @@ function OdometerScreen({ navigation, route }) {
                         marginTop: hp(1),
                       }}
                     >
-                      <AppInput
-                        tintColor={colors.GrayColor}
-                        // placeholder={CommonText.AddKilometers}
-                        placeholder={getTranslatedText("AddKilometers")}
-                        placeholderTextColor={colors.white}
-                        height={hp(5.5)}
-                        colortextInput={"white"}
-                        borderColor={colors.white}
-                        borderWidth={hp(0.15)}
-                        borderRadius={hp(2)}
-                        keyboardType="numeric"
-                        onChangeText={handleChange("Kilometers")}
-                        value={values.Kilometers}
-                        onBlur={handleBlur("Kilometers")}
-                      />
-                      {touched.Kilometers && errors.Kilometers && (
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            color: "red",
-                            marginLeft: hp(2),
-                            width: wp(70),
-                          }}
-                        >
-                          {errors.Kilometers}
+                      <View
+                        style={{
+                          height: hp(5.5),
+                          borderRadius: hp(2),
+                          borderWidth: hp(0.15),
+                          borderColor: "white",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Text style={{ paddingLeft: hp(2), color: "white" }}>
+                          {Distance != null ? Distance + " " : "Distance  "}{" "}
+                          {"miles"}
                         </Text>
-                      )}
+                      </View>
                     </View>
                   )}
                   {/* ==================== AutoSaveGallery Input Text ==================== */}
@@ -811,6 +806,10 @@ function OdometerScreen({ navigation, route }) {
                         borderRadius={hp(2)}
                         height={hp(5.5)}
                         onPress={handleSubmit}
+                        // onPress={() => {
+                        //   setOnTime((current) => !current);
+                        //   navigation.goBack();
+                        // }}
                       />
                     </View>
                   </View>

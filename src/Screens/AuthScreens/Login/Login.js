@@ -61,10 +61,10 @@ function Login({ navigation }) {
   }, []);
   // ================= Validation funtion with formik ==========================
   const userInfo = {
-    email: "",
-    phoneNumber: "",
-    // email: "israr4551@gmail.com",
-    // phoneNumber: "+923005270280",
+    // email: "",
+    // phoneNumber: "",
+    email: "israr4551@gmail.com",
+    phoneNumber: "+923005270280",
   };
 
   const validationSchema = yup.object({
@@ -81,7 +81,7 @@ function Login({ navigation }) {
     console.log("Fcmtoken Login ==>  ", fcmToken);
     let params = {
       email: values.email,
-      mobile: values.phoneNumber,
+      mobile: formatedMobileNO,
       fcm_token: fcmToken,
     };
     setIsLoading(true);
@@ -92,14 +92,14 @@ function Login({ navigation }) {
         AgainSendOtp(res.data.data.token);
         setIsLoading(false);
       } else {
-        console.log("else running");
+        // console.log("else running");
         console.log("login token ===>   ", res.data);
         await LocalStorage.storeObjectData(
           PreferenceKeys.token,
           res.data.data.token
         );
         dispatch(userToken(res.data.data.token));
-        dispatch(UserCredentails(res.data.data.user_data));
+        dispatch(UserCredentails(res.data.data.user_detail));
         dispatch(LoginCheck());
         dispatch(LoginFirstTime());
         setIsLoading(false);
@@ -262,27 +262,24 @@ function Login({ navigation }) {
                     // borderWidth: 1,
                     borderColor: colors.Plus,
                     justifyContent: "center",
-                    paddingTop: hp(0.5),
+                    paddingTop: hp(0.8),
                   }}
                 >
                   <AppMobileNoInputField
                     valid={valid}
-                    // defaultValue={""}
+                    placeholderTextColor={colors.lightColor}
                     formatedMobileNO={formatedMobileNO}
                     setFormatedMobileNO={setFormatedMobileNO}
                     setIsValid={setIsValid}
-                    label="Mobile No"
-                    laceholderTextColor={colors.white}
                     name="phoneNumber"
                     containerStyle={styles.phoneStyle}
                     textContainerStyle={styles.textStyle}
-                    codeTextStyle={{ color: colors.white, fontSize: 14 }}
-                    textInputStyle={{
-                      height: hp(3),
-                      fontSize: 14,
+                    codeTextStyle={{
                       color: colors.white,
-                      borderColor: colors.white,
+                      fontSize: hp(1.7),
+                      paddingTop: hp(0.3),
                     }}
+                    textInputStyle={styles.textStyle1}
                   />
                   <ValidationErrorMessage
                     error={"phone Number should be valid"}

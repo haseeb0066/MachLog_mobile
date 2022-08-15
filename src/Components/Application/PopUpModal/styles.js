@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 20,
     height: hp(26),
-    borderWidth: 1,
+    // borderWidth: 10,
   },
   icon: {
     width: wp(10),
@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     marginVertical: hp(3),
     fontWeight: "600",
+    color: colors.ButtonText,
   },
 });
 

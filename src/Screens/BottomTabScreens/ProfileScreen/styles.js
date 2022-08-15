@@ -152,6 +152,74 @@ const styles = StyleSheet.create({
     color: colors.ButtonText,
     fontWeight: "400",
   },
+  container1: {
+    height: hp(10),
+    alignItems: "center",
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  labelContainer: {
+    position: "absolute",
+    backgroundColor: colors.ButtonText,
+    // backgroundColor: "transparent",
+    top: Platform.OS == "android" ? hp(-0.5) : hp(0.5),
+    left: wp(15),
+    padding: hp(0.4),
+    zIndex: 50,
+    // borderWidth: 1,
+    // justifyContent:"center"
+  },
+  labelContainer1: {
+    position: "absolute",
+    backgroundColor: colors.ButtonText,
+    // backgroundColor: "transparent",
+    top: Platform.OS == "android" ? hp(-0.5) : hp(0.5),
+    left: wp(15),
+    padding: hp(0.8),
+    zIndex: 50,
+    // borderWidth: 1,
+    // justifyContent:"center"
+  },
+  inputBorder: {
+    height: hp(6),
+    width: wp(80),
+    // borderWidth: 1,
+    borderColor: colors.white,
+    justifyContent: "center",
+    marginTop: hp(1),
+    borderRadius: hp(1),
+  },
+  uploadIconContainer: {
+    // borderWidth: 1,
+    // width: wp(90),
+    marginTop: hp(2),
+    borderRadius: 15,
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    minHeight: hp(20),
+    flexDirection: "row",
+    // backgroundColor:"green"
+  },
+  uploadSection: {
+    width: "40%",
+    height: hp(16),
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    flexDirection: "column",
+    // borderWidth: 1,
+    backgroundColor: colors.white,
+  },
+  uploadTextDoc: {
+    color: colors.gray,
+    fontSize: hp(1.3),
+  },
+  profileImage: {
+    width: "100%",
+    height: hp(17.8),
+    borderRadius: 20,
+  },
 });
 
 export default styles;

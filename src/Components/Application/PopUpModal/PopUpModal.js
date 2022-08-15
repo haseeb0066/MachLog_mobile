@@ -10,8 +10,14 @@ import { hp, wp } from "../../../Utills/CommonMethods/CommonMethods";
 import styles from "./styles";
 import { Cameraicon, Galleryicon } from "../../../Assets/Images/SvgImages";
 import SvgComponent from "../../Common/SvgCustomComponents/SvgCustomComponents";
+import colors from "../../../Assets/Colors/Colors";
 
-const PopUpModal = ({ modalVisiblePopUp, onPressCamera, onPressGallery }) => {
+const PopUpModal = ({
+  modalVisiblePopUp,
+  onPressCamera,
+  onPressGallery,
+  onPressCancel,
+}) => {
   const [modalVisible, setModalVisible] = useState([]);
   setModalVisible;
   return (
@@ -23,10 +29,45 @@ const PopUpModal = ({ modalVisiblePopUp, onPressCamera, onPressGallery }) => {
         Alert.alert("Modal has been closed.");
       }}
     >
-      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+      <TouchableWithoutFeedback onPress={onPressCancel}>
         <View style={styles.modalContainer}>
           <View style={styles.section2}>
             <Text style={styles.mesText}>{"Upload Image"}</Text>
+            {/* <View style={{ flexDirection: "row" }}>
+              <View
+                style={{ width: wp(80), borderWidth: 1, borderColor: "white" }}
+              >
+                <Text style={styles.mesText}>{"Upload Image"}</Text>
+              </View>
+              <View
+                style={{
+                  width: wp(10),
+                  borderWidth: 1,
+                  borderColor: "white",
+                  bottom: hp(2),
+                  justifyContent: "center",
+                }}
+              >
+                <TouchableOpacity
+                  style={{
+                    width: wp(6),
+                    borderWidth: 1,
+                    // borderColor: "white",
+                    // bottom: hp(2),
+                    borderRadius: hp(5),
+                    height: hp(2.7),
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.ButtonText,
+                  }}
+                  onPress={() => {
+                    modalVisiblePopUp = false;
+                  }}
+                >
+                  <Text style={{ color: "white" }}>{"X"}</Text>
+                </TouchableOpacity>
+              </View>
+            </View> */}
 
             <View
               style={{
@@ -50,6 +91,7 @@ const PopUpModal = ({ modalVisiblePopUp, onPressCamera, onPressGallery }) => {
                     alignItems: "flex-start",
                     right: wp(6),
                     marginTop: hp(1),
+                    color: colors.ButtonText,
                   }}
                 >
                   Camera
@@ -70,6 +112,7 @@ const PopUpModal = ({ modalVisiblePopUp, onPressCamera, onPressGallery }) => {
                     alignItems: "flex-start",
                     left: wp(7),
                     marginTop: hp(1),
+                    color: colors.ButtonText,
                   }}
                 >
                   Gallery
